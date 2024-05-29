@@ -5,3 +5,4 @@ opencv-python
 imutils
 numpy
 cloudinary
+psycopg2-binary==2.9.5
