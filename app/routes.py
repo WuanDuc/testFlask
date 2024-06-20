@@ -1,6 +1,7 @@
 from app import app
 from flask import make_response, render_template, send_file
-from flask import Flask, Response, request, jsonify
+from flask import Flask, Response, request, jsonify, send_from_directory
+from werkzeug.utils import secure_filename
 import urllib.request
 from io import BytesIO
 import base64
@@ -12,15 +13,17 @@ from base64 import b64decode
 import imutils
 import shutil
 import time
-import cloudinary.uploader
-cloudinary.config( 
-  cloud_name = "dpej7xgsi", 
-  api_key = "528711498628591", 
-  api_secret = "zE8uzpVsTalZQmpeRHOvUnc81Fw",
-)
-from cloudinary import uploader
-import cloudinary.api
-from cloudinary.utils import cloudinary_url
+# import cloudinary.uploader
+# cloudinary.config( 
+#   cloud_name = "dpej7xgsi", 
+#   api_key = "528711498628591", 
+#   api_secret = "zE8uzpVsTalZQmpeRHOvUnc81Fw",
+# )
+# from cloudinary import uploader
+# import cloudinary.api
+# from cloudinary.utils import cloudinary_url
+UPLOAD_FOLDER = os.path.dirname(os.path.abspath(__file__))
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 def detect():
     #image = cv2.imread(image_file, cv2.IMREAD_UNCHANGED)
@@ -232,18 +235,38 @@ def index():
 @app.route('/image', methods=['GET', 'POST'])
 def image():
     if(request.method == "POST"):
-        bytesOfImage = request.get_data().decode('utf-8')
-        # with open('image.jpeg', 'wb') as out:
-        #     #out.write(bytesOfImage)
-        #     out.write(base64.decodebytes(bytesOfImage))
-        urllib.request.urlretrieve(bytesOfImage, 'image.jpeg')
-        #detectImage()
-        with open('image.jpeg', 'rb') as image_file:
-            encoded_string = base64.b64encode(image_file.read())
-        #response = make_response(send_file(file_path,mimetype='image/png'))
-        res = cloudinary.uploader.unsigned_upload(open('image.jpeg','rb'), upload_preset='videoApp', resource_type='image')
+        if 'file' not in request.files:
+            return jsonify({"error": "No file part"}), 400
+    
+        file = request.files['file']
         
-        return jsonify({'url': res['url']})
+        if file.filename == '':
+            return jsonify({"error": "No selected file"}), 400
+        
+        if file:
+            filename = secure_filename(file.filename)
+
+            # Check if the existing image is a JPEG
+            existing_file_path = os.path.join(app.config['UPLOAD_FOLDER'], 'image.jpeg')
+
+            # If the existing image is a JPEG, overwrite it
+            file_path = existing_file_path
+            file.save(file_path)        
+            #return jsonify({"message": "File uploaded successfully", "file_path": file_path, "filename": filename}), 200
+            return send_from_directory(app.config['UPLOAD_FOLDER'], 'image.jpeg')
+        else:
+            return jsonify({"error": "File upload failed"}), 400
+    if(request.method == "GET"):
+        return send_from_directory(app.config['UPLOAD_FOLDER'], 'image.jpeg')
+
+    #     urllib.request.urlretrieve(bytesOfImage, 'image.jpeg')
+    #     #detectImage()
+    #     with open('image.jpeg', 'rb') as image_file:
+    #         encoded_string = base64.b64encode(image_file.read())
+    #     #response = make_response(send_file(file_path,mimetype='image/png'))
+    #    # res = cloudinary.uploader.unsigned_upload(open('image.jpeg','rb'), upload_preset='videoApp', resource_type='image')
+        
+    #     return jsonify({'url': res['url']})
 
 @app.route("/video", methods=['GET', 'POST'])
 def video():
@@ -260,7 +283,7 @@ def video():
         with open("output_video.mp4", "rb") as videoFile:
             text = base64.b64encode(videoFile.read())
             #print(text)
-        res = cloudinary.uploader.unsigned_upload(open('output_video.mp4','rb'), upload_preset='videoApp', resource_type='video')
+        #res = cloudinary.uploader.unsigned_upload(open('output_video.mp4','rb'), upload_preset='videoApp', resource_type='video')
         
         return jsonify({'url': res['url']})
 
