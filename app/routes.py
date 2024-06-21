@@ -13,15 +13,15 @@ from base64 import b64decode
 import imutils
 import shutil
 import time
-# import cloudinary.uploader
-# cloudinary.config( 
-#   cloud_name = "dpej7xgsi", 
-#   api_key = "528711498628591", 
-#   api_secret = "zE8uzpVsTalZQmpeRHOvUnc81Fw",
-# )
-# from cloudinary import uploader
-# import cloudinary.api
-# from cloudinary.utils import cloudinary_url
+import cloudinary.uploader
+cloudinary.config( 
+  cloud_name = "dpej7xgsi", 
+  api_key = "528711498628591", 
+  api_secret = "zE8uzpVsTalZQmpeRHOvUnc81Fw",
+)
+from cloudinary import uploader
+import cloudinary.api
+from cloudinary.utils import cloudinary_url
 UPLOAD_FOLDER = os.path.dirname(os.path.abspath(__file__))
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
@@ -247,13 +247,18 @@ def image():
             filename = secure_filename(file.filename)
 
             # Check if the existing image is a JPEG
-            existing_file_path = os.path.join(app.config['UPLOAD_FOLDER'], 'image.jpeg')
+            #existing_file_path = os.path.join(app.config['UPLOAD_FOLDER'], 'image.jpeg')
+            existing_file_path =  'image.jpeg'
 
             # If the existing image is a JPEG, overwrite it
             file_path = existing_file_path
             file.save(file_path)        
             #return jsonify({"message": "File uploaded successfully", "file_path": file_path, "filename": filename}), 200
-            return send_from_directory(app.config['UPLOAD_FOLDER'], 'image.jpeg')
+            response = make_response(send_file(file_path,mimetype='image/png'))
+            res = cloudinary.uploader.unsigned_upload(open('image.jpeg','rb'), upload_preset='videoApp', resource_type='image')
+        
+            return jsonify({'url': res['url']})
+            #return send_from_directory(app.config['UPLOAD_FOLDER'], 'image.jpeg')
         else:
             return jsonify({"error": "File upload failed"}), 400
     if(request.method == "GET"):
@@ -271,19 +276,47 @@ def image():
 @app.route("/video", methods=['GET', 'POST'])
 def video():
     if(request.method == "POST"):
-        bytesOfVideo = request.get_data().decode('utf-8')
-        print(bytesOfVideo)
-        # with open('video.mp4', 'wb') as out:
-        #     out.write(base64.b64decode(bytesOfVideo))
-        # video_url = cloudinary.api.resource(bytesOfVideo)['url']
-        # print(video_url)
-
-        urllib.request.urlretrieve(bytesOfVideo, 'video.mp4')
-        #detectVideo()
-        with open("output_video.mp4", "rb") as videoFile:
-            text = base64.b64encode(videoFile.read())
-            #print(text)
-        #res = cloudinary.uploader.unsigned_upload(open('output_video.mp4','rb'), upload_preset='videoApp', resource_type='video')
+        if 'file' not in request.files:
+            return jsonify({"error": "No file part"}), 400
+    
+        file = request.files['file']
         
-        return jsonify({'url': res['url']})
+        if file.filename == '':
+            return jsonify({"error": "No selected file"}), 400
+        
+        if file:
+            filename = secure_filename(file.filename)
+
+            # Check if the existing image is a JPEG
+            #existing_file_path = os.path.join(app.config['UPLOAD_FOLDER'], 'image.jpeg')
+            existing_file_path =  'video.mp4'
+
+            # If the existing image is a JPEG, overwrite it
+            file_path = existing_file_path
+            file.save(file_path)        
+            #return jsonify({"message": "File uploaded successfully", "file_path": file_path, "filename": filename}), 200
+            #response = make_response(send_file(file_path,mimetype='video/mp4'))
+            res = cloudinary.uploader.unsigned_upload(open('video.mp4','rb'), upload_preset='videoApp', resource_type='video')
+        
+            return jsonify({'url': res['url']})
+            #return send_from_directory(app.config['UPLOAD_FOLDER'], 'image.jpeg')
+        else:
+            return jsonify({"error": "File upload failed"}), 400
+
+    # if(request.method == "POST"):
+    #     bytesOfVideo = request.get_data().decode('utf-8')
+    #     print(bytesOfVideo)
+    #     # with open('video.mp4', 'wb') as out:
+    #     #     out.write(base64.b64decode(bytesOfVideo))
+    #     # video_url = cloudinary.api.resource(bytesOfVideo)['url']
+    #     # print(video_url)
+
+    #     urllib.request.urlretrieve(bytesOfVideo, 'video.mp4')
+    #     #detectVideo()
+    #     with open("output_video.mp4", "rb") as videoFile:
+    #         text = base64.b64encode(videoFile.read())
+    #         #print(text)
+    #     #res = cloudinary.uploader.unsigned_upload(open('output_video.mp4','rb'), upload_preset='videoApp', resource_type='video')
+        
+    #     return jsonify({'url': res['url']})
 
