@@ -92,16 +92,12 @@ def detect(image):
     print(w,h)
     print("[INFO] loading model...")
     prototxt = 'deploy.prototxt'
-    prototxt_age = 'age_deploy.prototxt'
-    prototxt_gender = 'gender_deploy.prototxt'
     if (os.path.isfile(prototxt)):
         print("ok")
     else:
         print('[FILE NOT FOUND] prototxt is not found')
         return
     model = 'res10_300x300_ssd_iter_140000.caffemodel'
-    model_age = 'age_net.caffemodel'
-    model_gender = 'gender_net.caffemodel'
     if os.path.isfile(model):
         print("ok")
     else:
@@ -109,9 +105,6 @@ def detect(image):
         return
 
     net = cv2.dnn.readNetFromCaffe(prototxt, model)
-    net_age = cv2.dnn.readNetFromCaffe(prototxt_age, model_age)
-    net_gender = cv2.dnn.readNetFromCaffe(prototxt_gender, model_gender)
-
     padding = 20
 
     image = imutils.resize(image, width=400)
@@ -120,8 +113,8 @@ def detect(image):
     net.setInput(blob)
     detections = net.forward()
     MODEL_MEAN_VALUES = (78.4263377603, 87.7689143744, 114.895847746)
-    ageList = ['(0-2)', '(4-6)', '(8-12)', '(15-20)', '(25-32)', '(38-43)', '(48-53)', '(60-100)']
-    genderList = ['Male', 'Female']
+    # ageList = ['(0-2)', '(4-6)', '(8-12)', '(15-20)', '(25-32)', '(38-43)', '(48-53)', '(60-100)']
+    # genderList = ['Male', 'Female']
     sX = 0
     sY = 0
     eX = 0
@@ -145,18 +138,18 @@ def detect(image):
             # cv2.putText(image, text, (startX, y),
             #     cv2.FONT_HERSHEY_SIMPLEX, 0.45, (0, 0, 255), 2)
             t = time.time()
-            face = image[max(0,startY-padding):min(endY+padding,image.shape[0]-1),max(0,startX-padding):min(endX+padding, image.shape[1]-1)]
-            blob = cv2.dnn.blobFromImage(face, 1.0, (227, 227), MODEL_MEAN_VALUES, swapRB=False)
-            net_gender.setInput(blob)
-            genderPreds = net_gender.forward()
-            gender = genderList[genderPreds[0].argmax()]
-            net_age.setInput(blob)
-            agePreds = net_age.forward()
-            age = ageList[agePreds[0].argmax()]
+            # face = image[max(0,startY-padding):min(endY+padding,image.shape[0]-1),max(0,startX-padding):min(endX+padding, image.shape[1]-1)]
+            #blob = cv2.dnn.blobFromImage(face, 1.0, (227, 227), MODEL_MEAN_VALUES, swapRB=False)
+            #net_gender.setInput(blob)
+            #genderPreds = net_gender.forward()
+            #gender = genderList[genderPreds[0].argmax()]
+            #net_age.setInput(blob)
+            #agePreds = net_age.forward()
+            #age = ageList[agePreds[0].argmax()]
 
-            label = "{},{}".format(gender, age)
-            lb = label
-            cv2.putText(image, label, (startX, startY-10), cv2.FONT_HERSHEY_COMPLEX_SMALL, 0.8, (0, 0, 255), 1, cv2.LINE_AA)
+            #label = "{},{}".format(gender, age)
+            #lb = label
+            #cv2.putText(image, label, (startX, startY-10), cv2.FONT_HERSHEY_COMPLEX_SMALL, 0.8, (0, 0, 255), 1, cv2.LINE_AA)
     return image,sX,sY,eX,eY,lb
 def detectImage():
     path = 'image.jpeg'
@@ -253,8 +246,9 @@ def image():
             # If the existing image is a JPEG, overwrite it
             file_path = existing_file_path
             file.save(file_path)        
+            detectImage()
             #return jsonify({"message": "File uploaded successfully", "file_path": file_path, "filename": filename}), 200
-            response = make_response(send_file(file_path,mimetype='image/png'))
+            #response = make_response(send_file(file_path,mimetype='image/png'))
             res = cloudinary.uploader.unsigned_upload(open('image.jpeg','rb'), upload_preset='videoApp', resource_type='image')
         
             return jsonify({'url': res['url']})
@@ -294,6 +288,7 @@ def video():
             # If the existing image is a JPEG, overwrite it
             file_path = existing_file_path
             file.save(file_path)        
+            detectVideo
             #return jsonify({"message": "File uploaded successfully", "file_path": file_path, "filename": filename}), 200
             #response = make_response(send_file(file_path,mimetype='video/mp4'))
             res = cloudinary.uploader.unsigned_upload(open('video.mp4','rb'), upload_preset='videoApp', resource_type='video')
