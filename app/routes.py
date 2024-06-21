@@ -237,7 +237,6 @@ def image():
             return jsonify({"error": "No selected file"}), 400
         
         if file:
-            filename = secure_filename(file.filename)
 
             # Check if the existing image is a JPEG
             #existing_file_path = os.path.join(app.config['UPLOAD_FOLDER'], 'image.jpeg')
@@ -279,19 +278,17 @@ def video():
             return jsonify({"error": "No selected file"}), 400
         
         if file:
-            filename = secure_filename(file.filename)
 
-            # Check if the existing image is a JPEG
             #existing_file_path = os.path.join(app.config['UPLOAD_FOLDER'], 'image.jpeg')
             existing_file_path =  'video.mp4'
 
             # If the existing image is a JPEG, overwrite it
             file_path = existing_file_path
             file.save(file_path)        
-            detectVideo
+            detectVideo()
             #return jsonify({"message": "File uploaded successfully", "file_path": file_path, "filename": filename}), 200
             #response = make_response(send_file(file_path,mimetype='video/mp4'))
-            res = cloudinary.uploader.unsigned_upload(open('video.mp4','rb'), upload_preset='videoApp', resource_type='video')
+            res = cloudinary.uploader.unsigned_upload(open('output_video.mp4','rb'), upload_preset='videoApp', resource_type='video')
         
             return jsonify({'url': res['url']})
             #return send_from_directory(app.config['UPLOAD_FOLDER'], 'image.jpeg')
