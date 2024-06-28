@@ -44,8 +44,8 @@ def draw(image, startX, startY, endX, endY, label):
     cv2.rectangle(image, (startX, startY), (endX, endY), (0, 255, 0), 2)
     cv2.putText(image, label, (startX, startY-10), cv2.FONT_HERSHEY_COMPLEX_SMALL, 0.8, (0, 0, 255), 1, cv2.LINE_AA)
     return image
-emotion_dict = {0: "Angry", 1: "Disgust", 2: "Fear", 3: "Happy", 4: "Neutral", 5:"Sad", 6:"Surprise"}
-
+#emotion_dict = {0: "Angry", 1: "Disgust", 2: "Fear", 3: "Happy", 4: "Neutral", 5:"Sad", 6:"Surprise"}
+emotion_dict = {4: "Angry", 2: "Fear", 1: "Happy", 3: "Neutral", 0: "Sad"}
 
 def detect(image):
     global angry_count, disgust_count, fear_count, happy_count, neutral_count, sad_count, surprise_count
@@ -70,7 +70,7 @@ def detect(image):
 
     net = cv2.dnn.readNetFromCaffe(prototxt, model)
     padding = 20
-    emo = load_model('my_model.h5',compile=False, custom_objects={'BatchNormalization': BatchNormalization})
+    emo = load_model('my_model_five_class.h5',compile=False, custom_objects={'BatchNormalization': BatchNormalization})
     
     #print(emo.summary())
     #emo = load_model('my_model.h5',compile=False)
@@ -179,7 +179,7 @@ def detectVideo():
   (h, w) = frame.shape[:2]
   fourcc = cv2.VideoWriter_fourcc(*'mp4v')
   out = cv2.VideoWriter(output_video_path, fourcc, fps, (w, h))
-  frame_interval = int(fps * 1)  # detect every half second
+  frame_interval = int(fps * 0.5)  # detect every half second
   frame_count = 0
   image, startX, startY, endX, endY, label = detect(frame)
   # # Ghi frame đã detect vào video output
