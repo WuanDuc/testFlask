@@ -71,7 +71,7 @@ def detect(image):
     net = cv2.dnn.readNetFromCaffe(prototxt, model)
     padding = 20
     emo = load_model('my_model.h5',compile=False, custom_objects={'BatchNormalization': BatchNormalization})
-    print(emo.summary())
+    #print(emo.summary())
     #emo = load_model('my_model.h5',compile=False)
     image = imutils.resize(image, width=400)
     blob = cv2.dnn.blobFromImage(cv2.resize(image, (300, 300)), 1.0, (300, 300), (104.0, 177.0, 123.0))
@@ -170,25 +170,16 @@ def detectVideo():
   print(frame_width)
   print(frame_height)
   print(fps)
-
-
   ret, frame = cap.read()
   if not ret:
       return
-
   # Detect khuôn mặt trên frame
   frame = imutils.resize(frame, width=400)
   (h, w) = frame.shape[:2]
   fourcc = cv2.VideoWriter_fourcc(*'mp4v')
-  #out = cv2.VideoWriter(output_video_path, cv2.VideoWriter_fourcc(*'mjpg'), fps, (w, h))
   out = cv2.VideoWriter(output_video_path, fourcc, fps, (w, h))
-  #out = cv2.VideoWriter(output_video_path, cv2.VideoWriter_fourcc('m', 'p', '4', 'v'), 10, (w, h))
   frame_interval = int(fps * 0.5)  # detect every half second
-
   frame_count = 0
-  
-  
-  
   image, startX, startY, endX, endY, label = detect(frame)
   # # Ghi frame đã detect vào video output
   out.write(image)
@@ -196,7 +187,6 @@ def detectVideo():
       ret, frame = cap.read()
       if not ret:
           break
-
       # Detect khuôn mặt trên frame
       frame = imutils.resize(frame, width=400)
       (h, w) = frame.shape[:2]
@@ -214,34 +204,21 @@ def detectVideo():
   out.release()
 
 @app.route('/')
-@app.route('/index')
-def index():
-    user = {'username': 'Wuan'}
-    return render_template('index.html', title='Home', user=user)
 @app.route('/image', methods=['GET', 'POST'])
 def image():
     global angry_count, disgust_count, fear_count, happy_count, neutral_count, sad_count, surprise_count
     if(request.method == "POST"):
         if 'file' not in request.files:
-            return jsonify({"error": "No file part"}), 400
-    
-        file = request.files['file']
-        
+            return jsonify({"error": "No file part"}), 400  
+        file = request.files['file']       
         if file.filename == '':
-            return jsonify({"error": "No selected file"}), 400
-        
+            return jsonify({"error": "No selected file"}), 400        
         if file:
-
-            # Check if the existing image is a JPEG
-            #existing_file_path = os.path.join(app.config['UPLOAD_FOLDER'], 'image.jpeg')
             existing_file_path =  'image.jpeg'
-
             # If the existing image is a JPEG, overwrite it
             file_path = existing_file_path
             file.save(file_path)        
             detectImage()
-            #return jsonify({"message": "File uploaded successfully", "file_path": file_path, "filename": filename}), 200
-            #response = make_response(send_file(file_path,mimetype='image/png'))
             res = cloudinary.uploader.unsigned_upload(open('image.jpeg','rb'), upload_preset='videoApp', resource_type='image')
              # Prepare response with emotion counts and Cloudinary URL
             response = {
@@ -312,26 +289,18 @@ def video():
     global angry_count, disgust_count, fear_count, happy_count, neutral_count, sad_count, surprise_count
     if(request.method == "POST"):
         if 'file' not in request.files:
-            return jsonify({"error": "No file part"}), 400
-    
-        file = request.files['file']
-        
+            return jsonify({"error": "No file part"}), 400   
+        file = request.files['file']       
         if file.filename == '':
-            return jsonify({"error": "No selected file"}), 400
-        
+            return jsonify({"error": "No selected file"}), 400      
         if file:
-
             #existing_file_path = os.path.join(app.config['UPLOAD_FOLDER'], 'image.jpeg')
             existing_file_path =  'video.mp4'
-
             # If the existing image is a JPEG, overwrite it
             file_path = existing_file_path
             file.save(file_path)        
             detectVideo()
-            #return jsonify({"message": "File uploaded successfully", "file_path": file_path, "filename": filename}), 200
-            #response = make_response(send_file(file_path,mimetype='video/mp4'))
             res = cloudinary.uploader.unsigned_upload(open('output_video.mp4','rb'), upload_preset='videoApp', resource_type='video')
-        
             response = {
                 'url': res['url'],
                 'emotion_counts': [
