@@ -71,6 +71,7 @@ def detect(image):
     net = cv2.dnn.readNetFromCaffe(prototxt, model)
     padding = 20
     emo = load_model('my_model.h5',compile=False, custom_objects={'BatchNormalization': BatchNormalization})
+    
     #print(emo.summary())
     #emo = load_model('my_model.h5',compile=False)
     image = imutils.resize(image, width=400)
@@ -178,7 +179,7 @@ def detectVideo():
   (h, w) = frame.shape[:2]
   fourcc = cv2.VideoWriter_fourcc(*'mp4v')
   out = cv2.VideoWriter(output_video_path, fourcc, fps, (w, h))
-  frame_interval = int(fps * 0.5)  # detect every half second
+  frame_interval = int(fps * 1)  # detect every half second
   frame_count = 0
   image, startX, startY, endX, endY, label = detect(frame)
   # # Ghi frame đã detect vào video output
