@@ -44,8 +44,8 @@ def draw(image, startX, startY, endX, endY, label):
     cv2.rectangle(image, (startX, startY), (endX, endY), (0, 255, 0), 2)
     cv2.putText(image, label, (startX, startY-10), cv2.FONT_HERSHEY_COMPLEX_SMALL, 0.8, (0, 0, 255), 1, cv2.LINE_AA)
     return image
-#emotion_dict = {0: "Angry", 1: "Disgust", 2: "Fear", 3: "Happy", 4: "Neutral", 5:"Sad", 6:"Surprise"}
-emotion_dict = {4: "Angry", 2: "Fear", 1: "Happy", 3: "Neutral", 0: "Sad"}
+emotion_dict = {6: "Angry", 1: "Disgust", 3: "Fear", 2: "Happy", 4: "Neutral", 5:"Sad", 0:"Surprise"}
+#emotion_dict = {0: "Angry", 2: "Fear", 1: "Happy", 3: "Neutral", 4: "Sad"}
 
 def detect(image):
     global angry_count, disgust_count, fear_count, happy_count, neutral_count, sad_count, surprise_count
@@ -70,7 +70,7 @@ def detect(image):
 
     net = cv2.dnn.readNetFromCaffe(prototxt, model)
     padding = 20
-    emo = load_model('my_model_five_class.h5',compile=False, custom_objects={'BatchNormalization': BatchNormalization})
+    emo = load_model('my_model.h5',compile=False, custom_objects={'BatchNormalization': BatchNormalization})
     
     #print(emo.summary())
     #emo = load_model('my_model.h5',compile=False)
@@ -125,7 +125,7 @@ def detect(image):
                 text_y = startY - 10  # Above the bounding box
 
                 # Draw the predicted emotion text on the image
-                cv2.putText(image, emotion_dict[maxindex], (text_x, text_y), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 2, cv2.LINE_AA)
+                cv2.putText(image, emotion_dict[maxindex], (text_x, text_y), cv2.FONT_HERSHEY_COMPLEX_SMALL, 0.8, (0, 0, 255), 1, cv2.LINE_AA)
 
                 lb = emotion_dict[maxindex]
                 if emotion_dict[maxindex] == 'Angry':
@@ -160,6 +160,7 @@ def detectImage():
         print('[INFO] imagesize:', image.shape)
     output, *_ = detect(image)
     cv2.imwrite("image.jpeg", output)
+    
 def detectVideo():
   global angry_count, disgust_count, fear_count, happy_count, neutral_count, sad_count, surprise_count
   video_path = 'video.mp4'
